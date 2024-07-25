@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'code_manifest'
+
+tag = CodeManifest['docker'].digest
+image = "debugging-container:#{tag}"
+
+# check for existing tag locally from docker
+existing_image = `docker images -q #{image}`.strip
+
+if existing_image.empty?
+  system "docker build . -t #{image}"
+end
+
+docker_run_command = "docker run --hostname debug --rm -it --volume \"$(pwd)/.bash_history:/root/.bash_history\" #{image}"
+exec docker_run_command
